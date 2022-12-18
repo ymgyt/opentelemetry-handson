@@ -1,0 +1,43 @@
+# https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md
+receivers:
+  otlp:
+    # Disable http
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+
+processors:
+  # TODO: attributes, memory_limiter
+  batch:
+
+# https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/README.md
+exporters:
+  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/loggingexporter/README.md
+  # Exports data to the console via zap.Logger
+  logging:
+    # loglevel is deprecated in favor of verbosity
+    # detailed | normal | basic
+    verbosity: detailed
+    sampling_initial: 5
+  otlp/elastic:
+    endpoint: "apm-server:8200"
+    tls:
+      ca_file: /usr/share/otel/config/certs/ca/ca.crt
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+  jaeger:
+    endpoint: "jaeger:14250"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, otlp/elastic, jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, otlp/elastic, prometheus]

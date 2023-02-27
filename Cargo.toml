@@ -12,12 +12,3 @@ tracing-futures = "0.2.5"
 tracing-opentelemetry = { version = "0.18.0", default-features = false, features = ["tracing-log", "metrics"] }
 tracing-subscriber = "0.3.16"
 opentelemetry_sdk = "0.18.0"
-
-[patch.crates-io]
-opentelemetry = { path = "/Users/ymgyt/rs/opentelemetry-rust/opentelemetry" }
-opentelemetry_sdk = { path = "/Users/ymgyt/rs/opentelemetry-rust/opentelemetry-sdk" }
-tracing = { path = "/Users/ymgyt/rs/tracing/tracing"}
-tracing-subscriber = { path = "/Users/ymgyt/rs/tracing/tracing-subscriber" }
-tracing-opentelemetry = { path = "/Users/ymgyt/rs/tracing/tracing-opentelemetry" }
-opentelemetry-otlp = { path = "/Users/ymgyt/rs/opentelemetry-rust/opentelemetry-otlp" }
-opentelemetry-proto = { path = "/Users/ymgyt/rs/opentelemetry-rust/opentelemetry-proto" }

@@ -1,6 +1,6 @@
 use opentelemetry::sdk::metrics::controllers::BasicController;
 use opentelemetry_otlp::WithExportConfig;
-use tracing::{info, info_span, error};
+use tracing::{error, info, info_span};
 use tracing_futures::Instrument;
 
 // https://github.com/open-telemetry/opentelemetry-rust/blob/d4b9befea04bcc7fc19319a6ebf5b5070131c486/examples/basic-otlp/src/main.rs#L35-L52
@@ -33,11 +33,9 @@ fn init_tracing() {
             opentelemetry::sdk::trace::config()
                 .with_sampler(opentelemetry::sdk::trace::Sampler::AlwaysOn)
                 .with_id_generator(opentelemetry::sdk::trace::RandomIdGenerator::default())
-                .with_resource(opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
-                    "service.name",
-                    "sample-app",
-                )]))
-            ,
+                .with_resource(opentelemetry::sdk::Resource::new(vec![
+                    opentelemetry::KeyValue::new("service.name", "sample-app"),
+                ])),
         )
         .install_batch(opentelemetry::runtime::Tokio)
         // .install_simple()
@@ -59,36 +57,37 @@ fn init_tracing() {
 }
 
 async fn start() {
+    let req_id = "123";
     let user = "ymgyt";
 
-    operation().instrument(info_span!("auth", %user)).await;
-    operation_2().instrument(info_span!("db")).await;
+    operation(req_id, user).await;
 }
 
-async fn operation() {
+#[tracing::instrument(
+    fields(?request_id)
+)]
+async fn operation(request_id: &str, user: &str) {
     // trace
     // https://docs.rs/tracing-opentelemetry/latest/tracing_opentelemetry/struct.MetricsLayer.html#usage
-    info!(
-        ops = "xxx",
-        counter.ops_count = 10,
-        "successfully completed"
-    );
-}
+    info!(ops = "xxx", "message");
 
-async fn operation_2() {
-    info!(arg = "xyz", "fetch resources...");
-    error!("something went wrong");
+    let res = reqwest::get("http://localhost:8000/foo").await.unwrap();
+    info!("{res:#?}");
 }
 
 #[tokio::main]
 async fn main() {
+    opentelemetry::global::set_text_map_propagator(
+        opentelemetry::sdk::propagation::TraceContextPropagator::new(),
+    );
+
     init_tracing();
 
     let version = env!("CARGO_PKG_VERSION");
 
     start().instrument(info_span!("request", %version)).await;
 
-    tokio::time::sleep(std::time::Duration::from_secs(60)).await;
-
     opentelemetry::global::shutdown_tracer_provider();
+
+    // tokio::time::sleep(std::time::Duration::from_secs(60)).await;
 }

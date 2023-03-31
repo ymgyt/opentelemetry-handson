@@ -6,11 +6,13 @@ from opentelemetry.trace.span import Span
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.semconv.trace import SpanAttributes
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 import logging
 
 
 def configure_tracer():
-    exporter = ConsoleSpanExporter()
+    # exporter = ConsoleSpanExporter()
+    exporter= OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
     span_processor = BatchSpanProcessor(exporter)
     resource = Resource.create(
         {
@@ -18,9 +20,11 @@ def configure_tracer():
         "service.version": "0.1.2",
         }
     )
+
     provider = TracerProvider(resource=resource)
     # comment out to surpress otel
     provider.add_span_processor(span_processor)
+    
     trace.set_tracer_provider(provider)
     return trace.get_tracer(__name__, "0.0.1")
 
@@ -64,7 +68,7 @@ def work():
 
     return {"result": "OK"}
 
-@tracer.start_as_current_span("work_inncer")
+@tracer.start_as_current_span("work_inner")
 def work_inner():
     return 100
 

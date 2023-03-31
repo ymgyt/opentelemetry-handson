@@ -3,5 +3,5 @@
 ### Python
 
 ```sh
-pip install fastapi[all] opentelemetry-api opentelemetry-sdk opentelemetry-instrumentation-fastapi
+pip install fastapi[all] opentelemetry-api opentelemetry-sdk opentelemetry-instrumentation-fastapi opentelemetry-exporter-otlp
 ```
